@@ -24,7 +24,6 @@ public class CanaryModule extends AbstractModule {
     @Singleton
     Session getSession(Provider<HibernateBundle<Config>> hibernateBundleProvider) {
         Session session = hibernateBundleProvider.get().getSessionFactory().openSession();
-        session.beginTransaction();
 
         return session;
     }
