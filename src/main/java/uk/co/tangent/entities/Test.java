@@ -17,13 +17,13 @@ public class Test {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    String name;
+    private String name;
 
     @Column(columnDefinition = "text")
-    String definition;
+    private String definition;
 
     @OneToMany(mappedBy = "test")
-    List<TestResult> results;
+    private List<TestResult> results;
 
     public Long getId() {
         return id;
@@ -67,7 +67,7 @@ public class Test {
         }
 
         Test other = (Test) o;
-        return this.getId() == other.getId();
+        return this.getId().equals(other.getId());
     }
 
     @Override

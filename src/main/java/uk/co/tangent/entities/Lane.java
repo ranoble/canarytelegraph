@@ -1,14 +1,8 @@
 package uk.co.tangent.entities;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -53,14 +47,14 @@ public class Lane extends ServiceAwareEntity {
 
     @Type(type = "hstore")
     @Column(columnDefinition = "hstore")
-    Map<String, String> laneBindings = new HashMap<String, String>();
+    private Map<String, String> laneBindings = new HashMap<String, String>();
 
     @ManyToMany(cascade = { CascadeType.ALL })
     @JoinTable(name = "lane_tests")
-    List<Test> tests;
+    private List<Test> tests;
 
     @OneToMany(mappedBy = "lane")
-    List<TestResult> results;
+    private List<TestResult> results;
 
     private String name;
 
@@ -94,12 +88,10 @@ public class Lane extends ServiceAwareEntity {
 
     @JsonGetter(value = "tests")
     public Set<String> serializeTests() {
-
         List<Test> tests = getTests();
-        Set<String> out = tests.stream()
+        return tests.stream()
                 .map(test -> getServices().getTestService().getPath(test))
                 .collect(Collectors.toSet());
-        return out;
 
     }
 
@@ -204,7 +196,7 @@ public class Lane extends ServiceAwareEntity {
         }
 
         Lane other = (Lane) o;
-        return this.getId() == other.getId();
+        return this.getId().equals(other.getId());
     }
 
     @Override

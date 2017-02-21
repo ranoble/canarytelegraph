@@ -1,16 +1,11 @@
 package uk.co.tangent.services;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.dropwizard.hibernate.HibernateBundle;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-
+import uk.co.tangent.Config;
 import uk.co.tangent.data.CanaryTest;
 import uk.co.tangent.data.steps.Step;
 import uk.co.tangent.data.steps.confirmations.FailedResult;
@@ -19,32 +14,45 @@ import uk.co.tangent.entities.Lane;
 import uk.co.tangent.entities.Test;
 import uk.co.tangent.entities.TestResult;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.CompletableFuture;
 
-public abstract class TaskService {
+@Singleton
+public class TaskService {
 
     Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
     private ObjectMapper objectMapper;
+    private final HibernateBundle<Config> hibernateBundle;
+    private final LaneService laneService;
+    private final TestResultService testResultService;
 
-    protected abstract Session getSession();
+    protected Session getSession() {
+        return hibernateBundle.getSessionFactory().getCurrentSession();
+    }
 
-    @Deprecated
-    /**
-     * This is here to allow the hibernate session state to be managed in the thread. 
-     * We can remove this if we move to a simple immutable message queue.
-     * @return SessionFactory
-     */
-    protected abstract SessionFactory getSessionFactory();
+    protected SessionFactory getSessionFactory() {
+        return hibernateBundle.getSessionFactory();
+    }
 
-    public TaskService(TestResultService testResultService) {
+    @Inject
+    public TaskService(HibernateBundle<Config> hibernateBundle, LaneService laneService, TestResultService testResultService) {
         objectMapper = new ObjectMapper();
+        this.hibernateBundle = hibernateBundle;
+        this.testResultService = testResultService;
+        this.laneService = laneService;
     }
 
     public void addLane(Lane lane) {
         tasks.put(lane, CompletableFuture.completedFuture(new ArrayList<>()));
     }
 
-    // TODO: This needs to be rewtitten to use simple immutable messages.
+    // TODO: This needs to be rewritten to use simple immutable messages.
     // Horrible, but works for a pre-alpha.
     public void startLane(Lane lane) throws LaneAlreadyRunningException {
         CompletableFuture<?> future = tasks.get(lane);
@@ -57,23 +65,11 @@ public abstract class TaskService {
                 CompletableFuture.runAsync(() -> {
                     try {
                         List<Result> testResults = new ArrayList<>();
-                        for (;;) {
+                        while (!Thread.currentThread().isInterrupted()) {
                             try (Session session = getSessionFactory()
                                     .openSession()) {
                                 Transaction transaction = session
                                         .beginTransaction();
-                                TestResultService testResultService = new TestResultService() {
-                                    @Override
-                                    protected Session getSession() {
-                                        return session;
-                                    }
-                                };
-                                LaneService laneService = new LaneService() {
-                                    @Override
-                                    protected Session getSession() {
-                                        return session;
-                                    }
-                                };
 
                                 Test _test = laneService.loadRandomTest(lane);
                                 System.out.println("Loaded Test");
@@ -103,17 +99,14 @@ public abstract class TaskService {
                                 testRes.setResults(objectMapper
                                         .writeValueAsString(testResults));
 
-                                testResultService.saveResults(testRes);
+                                testResultService.saveResults(session, testRes);
 
                                 transaction.commit();
                                 testResults.clear();
                                 lane.sleep();
                             }
-
                         }
-
                     } catch (Exception e) {
-                        // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
                 }));

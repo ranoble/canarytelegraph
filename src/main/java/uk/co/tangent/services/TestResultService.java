@@ -1,37 +1,36 @@
 package uk.co.tangent.services;
 
+import io.dropwizard.hibernate.HibernateBundle;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-
+import uk.co.tangent.Config;
 import uk.co.tangent.entities.TestResult;
 
-public abstract class TestResultService {
-    SessionFactory sessionFactory;
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+
+@Singleton
+public class TestResultService {
+    private final Provider<Session> sessionProvider;
+    private final Provider<HibernateBundle<Config>> hibernateBundleProvider;
+
+    @Inject
+    public TestResultService(Provider<Session> sessionProvider, Provider<HibernateBundle<Config>> hibernateBundleProvider) {
+        this.sessionProvider = sessionProvider;
+        this.hibernateBundleProvider = hibernateBundleProvider;
+    }
 
     public SessionFactory getSessionFactory() {
-        return sessionFactory;
+        return hibernateBundleProvider.get().getSessionFactory();
     }
 
-    public void setSessionFactory(SessionFactory sessionFactory) {
-        this.sessionFactory = sessionFactory;
+    protected Session getSession() {
+        return sessionProvider.get();
     }
 
-    protected abstract Session getSession();
-
-    public TestResultService() {
-    }
-
-    public void saveResults(TestResult testRes) {
-        try (Session session = sessionFactory.openSession()) {
-            Transaction transaction = session.beginTransaction();
-            try {
-                session.save(testRes);
-                transaction.commit();
-            } catch (Exception e) {
-                transaction.rollback();
-            }
-
-        }
+    public void saveResults(Session session, TestResult testRes) {
+        session.save(testRes);
     }
 }

@@ -1,23 +1,30 @@
 package uk.co.tangent.services;
 
-import java.util.List;
-import java.util.Random;
-
 import org.hibernate.Criteria;
 import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
-
 import uk.co.tangent.entities.Lane;
 import uk.co.tangent.entities.Test;
 
-public abstract class LaneService {
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.List;
+import java.util.Random;
 
-    protected abstract Session getSession();
+@Singleton
+public class LaneService {
+    private final Provider<Session> sessionProvider;
+
+    protected Session getSession() {
+        return sessionProvider.get();
+    }
 
     // private TaskService tasks;
 
-    public LaneService() {
-        // this.tasks = tasks;
+    @Inject
+    public LaneService(Provider<Session> sessionProvider) {
+        this.sessionProvider = sessionProvider;
     }
 
     public Lane getLane(Long id) {

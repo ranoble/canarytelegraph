@@ -7,50 +7,46 @@ import uk.co.tangent.services.TaskService;
 import uk.co.tangent.services.TestResultService;
 import uk.co.tangent.services.TestService;
 
-public class ServiceRegistry {
-    private TestService testService;
-    private TaskService tasks;
-    private LaneService laneService;
-    private TestResultService testResult;
-    private HibernateBundle<Config> hibernate;
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 
-    public TestService getTestService() {
-        return testService;
+@Singleton
+public class ServiceRegistry {
+    private final Provider<TestService> testService;
+    private final Provider<TaskService> tasks;
+    private final Provider<LaneService> laneService;
+    private final Provider<TestResultService> testResult;
+    private final Provider<HibernateBundle<Config>> hibernate;
+
+    @Inject
+    public ServiceRegistry(Provider<TestService> testService, Provider<TaskService> tasks, Provider<LaneService> laneService,
+                           Provider<TestResultService> testResult, Provider<HibernateBundle<Config>> hibernateBundleProvider) {
+        this.testResult = testResult;
+        this.testService = testService;
+        this.laneService = laneService;
+        this.tasks = tasks;
+        this.hibernate = hibernateBundleProvider;
     }
 
-    public void setTestService(TestService testService) {
-        this.testService = testService;
+    public TestService getTestService() {
+        return testService.get();
     }
 
     public TaskService getTasks() {
-        return tasks;
-    }
-
-    public void setTasks(TaskService tasks) {
-        this.tasks = tasks;
+        return tasks.get();
     }
 
     public LaneService getLaneService() {
-        return laneService;
+        return laneService.get();
     }
 
-    public void setLaneService(LaneService laneService) {
-        this.laneService = laneService;
-    }
 
     public TestResultService getTestResult() {
-        return testResult;
-    }
-
-    public void setTestResult(TestResultService testResult) {
-        this.testResult = testResult;
+        return testResult.get();
     }
 
     public HibernateBundle<Config> getHibernate() {
-        return hibernate;
-    }
-
-    public void setHibernate(HibernateBundle<Config> hibernate) {
-        this.hibernate = hibernate;
+        return hibernate.get();
     }
 }

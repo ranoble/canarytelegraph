@@ -1,15 +1,24 @@
 package uk.co.tangent.services;
 
-import java.util.List;
-
 import org.hibernate.Session;
-
 import uk.co.tangent.entities.Test;
 
-public abstract class TestService {
-    protected abstract Session getSession();
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+import java.util.List;
 
-    public TestService() {
+@Singleton
+public class TestService {
+    private final Provider<Session> sessionProvider;
+
+    @Inject
+    public TestService(Provider<Session> sessionProvider) {
+        this.sessionProvider = sessionProvider;
+    }
+
+    protected Session getSession() {
+        return sessionProvider.get();
     }
 
     public String getPath(Test test) {

@@ -35,19 +35,21 @@ public class TestResult extends ServiceAwareEntity {
 
     @ManyToOne
     @JoinColumn(name = "test_id")
-    Test test;
+    private Test test;
 
     @ManyToOne
     @JoinColumn(name = "lane_id")
-    Lane lane;
+    private Lane lane;
 
     @Type(type = "hstore")
     @Column(columnDefinition = "hstore")
-    Map<String, String> bindings = new HashMap<String, String>();
+    private Map<String, String> bindings = new HashMap<String, String>();
+
     @Column(columnDefinition = "text")
-    String results;
-    DateTime written = new DateTime();
-    Boolean healthy;
+    private String results;
+
+    private DateTime written = new DateTime();
+    private Boolean healthy;
 
     public Long getId() {
         return id;

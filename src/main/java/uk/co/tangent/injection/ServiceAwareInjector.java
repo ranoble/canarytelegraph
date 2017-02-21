@@ -1,16 +1,19 @@
 package uk.co.tangent.injection;
 
-import java.io.Serializable;
-
 import org.hibernate.EmptyInterceptor;
 import org.hibernate.type.Type;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import java.io.Serializable;
+
 public class ServiceAwareInjector extends EmptyInterceptor {
     private static final long serialVersionUID = 1L;
-    private ServiceRegistry services;
+    private Provider<ServiceRegistry> servicesProvider;
 
-    public ServiceAwareInjector(ServiceRegistry services) {
-        this.services = services;
+    @Inject
+    public ServiceAwareInjector(Provider<ServiceRegistry> servicesProvider) {
+        this.servicesProvider = servicesProvider;
     }
 
     @Override
@@ -18,7 +21,7 @@ public class ServiceAwareInjector extends EmptyInterceptor {
             String[] propertyNames, Type[] types) {
         if (entity instanceof ServiceAwareEntity) {
             ServiceAwareEntity _entity = (ServiceAwareEntity) entity;
-            _entity.setServices(services);
+            _entity.setServices(servicesProvider.get());
         }
         return super.onLoad(entity, id, state, propertyNames, types);
     }
