@@ -1,0 +1,48 @@
+ 
+bindings:
+ - lastname: '[ab]{4,6}c'
+descriminator: '${canary_id}'
+steps:
+  - type: http
+    name: Update user
+    url: http://localhost/people
+    auth:
+      type: basic
+      name: guest
+      password: guest
+    method: PUT
+    payload: '{"id": ${canary_id}, "firstName": "John", "lastName": "${lastname}"}'
+    headers:
+      - Content-Type: application/json
+    confirm:
+      - field: status
+        name: Confirm request status code
+        operation: equals
+        value: 200
+      - field: body
+        name: Confirm request lastName updated
+        operation: contains
+        value: '"lastName": "${lastname}"'
+  - type: delay
+    name: Wait for 60 minutes
+    length: 60
+    metric: minute
+  - type: http
+    name: Check user update
+    url: http://localhost/people/${canary_id}
+    auth:
+      type: basic
+      name: guest
+      password: guest
+    method: GET
+    headers:
+     - Content-Type: application/json
+    confirm:
+      - field: status
+        name: Confirm result status code
+        operation: equals
+        value: 200
+      - field: body
+        name: Confirm lastName updated
+        operation: contains
+        value: '"lastName": "${lastname}"'

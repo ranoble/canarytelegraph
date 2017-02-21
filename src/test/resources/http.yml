@@ -1,0 +1,20 @@
+type: http
+url: http://localhost/people
+name: HTTP request
+auth:
+  type: basic
+  name: guest 
+  password: guest
+method: PUT
+payload: '{"id": ${canary_id}, "firstName": "John", "lastName": "${lastname}"}'
+headers:
+  - Content-Type: application/json
+confirm:
+  - field: status
+    name: 1
+    operation: equals
+    value: 200
+  - field: status
+    name: 2
+    operation: contains
+    value: '"lastName": "${lastname}"'

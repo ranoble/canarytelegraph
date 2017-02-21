@@ -1,0 +1,4 @@
+type: delay
+name: delay
+length: 60
+metric: minute

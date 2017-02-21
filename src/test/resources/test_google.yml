@@ -1,0 +1,20 @@
+bindings:
+ - lastname: '[ab]{4,6}c'
+steps:
+  - type: delay
+    name: Wait for 60 minutes
+    length: 60
+    metric: second
+  - type: http
+    name: Check user update
+    url: https://www.google.co.uk/?ie=UTF-8#q=${lastname}
+    method: GET
+    confirm:
+      - field: status
+        name: Confirm result status code
+        operation: equals
+        value: 200
+      - field: body
+        name: Confirm lastName updated
+        operation: contains
+        value: 'Did you mean:'

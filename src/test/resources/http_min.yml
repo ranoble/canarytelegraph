@@ -1,0 +1,4 @@
+type: http
+url: http://localhost/people
+method: GET
+name: Http Min
