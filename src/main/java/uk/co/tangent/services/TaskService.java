@@ -5,6 +5,8 @@ import io.dropwizard.hibernate.HibernateBundle;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.tangent.Config;
 import uk.co.tangent.data.CanaryTest;
 import uk.co.tangent.data.steps.Step;
@@ -25,6 +27,7 @@ import java.util.concurrent.CompletableFuture;
 
 @Singleton
 public class TaskService {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
 
     Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
     private ObjectMapper objectMapper;
@@ -72,7 +75,7 @@ public class TaskService {
                                         .beginTransaction();
 
                                 Test _test = laneService.loadRandomTest(lane);
-                                System.out.println("Loaded Test");
+                                LOGGER.info("Loaded Test");
                                 CanaryTest test = lane.parse(_test);
                                 lane.applyBindings(test);
                                 boolean healthy = true;
@@ -90,7 +93,7 @@ public class TaskService {
                                         healthy = false;
                                     }
                                 }
-                                System.out.println("Steps complete");
+                                LOGGER.info("Steps complete");
 
                                 TestResult testRes = new TestResult();
                                 testRes.setTest(_test);
@@ -107,7 +110,7 @@ public class TaskService {
                             }
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        LOGGER.error("Error running task", e);
                     }
                 }));
     }
@@ -121,5 +124,4 @@ public class TaskService {
             lanes.getValue().cancel(true);
         }
     }
-
 }
