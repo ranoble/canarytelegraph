@@ -22,9 +22,7 @@ public class CanaryModule extends AbstractModule {
 
     @Provides
     Session getSession(Provider<HibernateBundle<Config>> hibernateBundleProvider) {
-        Session session = hibernateBundleProvider.get().getSessionFactory().openSession();
-
-        return session;
+        return hibernateBundleProvider.get().getSessionFactory().openSession();
     }
 
     @Provides
