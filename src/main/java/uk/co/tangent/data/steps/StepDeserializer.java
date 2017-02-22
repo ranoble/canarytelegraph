@@ -19,7 +19,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class StepDeserializer extends JsonDeserializer<Step> {
 
-    public static final String NAME = "type";
+    private static final String NAME = "type";
     private Map<String, Class> steps;
 
     public StepDeserializer() {

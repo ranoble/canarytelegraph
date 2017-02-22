@@ -10,13 +10,13 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 public class Confirmation {
-    String name;
-    String field;
-    String operation;
-    String value;
+    private String name;
+    private String field;
+    private String operation;
+    private String value;
 
     @JacksonInject
-    protected Map<String, String> valueBindings;
+    private Map<String, String> valueBindings;
 
     public String getName() {
         return name;
@@ -59,8 +59,8 @@ public class Confirmation {
         try {
             String returned = BeanUtils.getProperty(response, field);
             value = bind(value);
-            if (operation.equals("contains")) {
-
+            switch (operation) {
+            case "contains":
                 if (StringUtils.contains(returned, value)) {
                     return new SuccessResult(this, String.format(
                             "%s is contained in %s", field, value));
@@ -68,7 +68,7 @@ public class Confirmation {
                     return new FailedResult(this, String.format(
                             "%s is not contained in %s", field, value));
                 }
-            } else if (operation.equals("equals")) {
+            case "equals":
                 if (StringUtils.equals(returned, value)) {
                     return new SuccessResult(this, String.format(
                             "%s is equal to %s", field, value));
@@ -76,15 +76,11 @@ public class Confirmation {
                     return new FailedResult(this, String.format(
                             "%s is not equal to %s", field, value));
                 }
-            } else {
+            default:
                 return new FailedResult(this, String.format(
                         "Operation %s doesn't exist", operation));
             }
-        } catch (IllegalAccessException e) {
-            return new FailedResult(this, e);
-        } catch (InvocationTargetException e) {
-            return new FailedResult(this, e);
-        } catch (NoSuchMethodException e) {
+        } catch (IllegalAccessException|InvocationTargetException|NoSuchMethodException e) {
             return new FailedResult(this, e);
         }
     }

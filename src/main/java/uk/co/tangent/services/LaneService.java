@@ -33,12 +33,14 @@ public class LaneService {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<Lane> getLanes() {
         try (Session session = getSession()) {
             return session.createCriteria(Lane.class).list();
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<Test> loadTests(Lane lane) {
         try (Session session = getSession()) {
             Criteria cr = session.createCriteria(Test.class);
@@ -51,7 +53,7 @@ public class LaneService {
         try (Session session = getSession()) {
             if (lane.getId() == null) {
                     session.save(lane);
-                /**
+                /*
                  * TODO: Readd
                  */
                 // tasks.addLane(lane);

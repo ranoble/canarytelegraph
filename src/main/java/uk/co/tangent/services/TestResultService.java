@@ -1,10 +1,6 @@
 package uk.co.tangent.services;
 
-import io.dropwizard.hibernate.HibernateBundle;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import uk.co.tangent.Config;
 import uk.co.tangent.entities.TestResult;
 
 import javax.inject.Inject;

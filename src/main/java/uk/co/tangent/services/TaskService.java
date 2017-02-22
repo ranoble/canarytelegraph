@@ -1,11 +1,8 @@
 package uk.co.tangent.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.hibernate.HibernateBundle;
 import org.hibernate.Session;
-import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
-import uk.co.tangent.Config;
 import uk.co.tangent.data.CanaryTest;
 import uk.co.tangent.data.steps.Step;
 import uk.co.tangent.data.steps.confirmations.FailedResult;
@@ -27,7 +24,7 @@ import java.util.concurrent.CompletableFuture;
 @Singleton
 public class TaskService {
 
-    Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
+    private Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
     private ObjectMapper objectMapper;
     private final Provider<Session> sessionProvider;
     private final LaneService laneService;

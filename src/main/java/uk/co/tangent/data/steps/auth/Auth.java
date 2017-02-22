@@ -1,5 +1,10 @@
 package uk.co.tangent.data.steps.auth;
+
 public class Auth {
+    private String type;
+    private String name;
+    private String password;
+
     public String getType() {
         return type;
     }
@@ -23,8 +28,4 @@ public class Auth {
     public void setPassword(String password) {
         this.password = password;
     }
-
-    String type;
-    String name;
-    String password;
 }

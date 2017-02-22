@@ -10,13 +10,13 @@ import uk.co.tangent.data.steps.Step;
 import com.fasterxml.jackson.annotation.JacksonInject;
 
 public class CanaryTest {
-    List<Map<String, String>> bindings;
-    List<Step> steps;
-    String descriminator;
+    private List<Map<String, String>> bindings;
+    private List<Step> steps;
+    private String descriminator;
 
     @JacksonInject
-    Map<String, String> valueBindings;
-    String name;
+    private Map<String, String> valueBindings;
+    private String name;
 
     public String getName() {
         return name;

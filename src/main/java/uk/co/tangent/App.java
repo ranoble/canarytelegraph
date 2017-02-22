@@ -70,7 +70,7 @@ public class App extends Application<Config> {
         registerAndRunLanes();
     }
 
-    protected void registerAndRunLanes() throws LaneAlreadyRunningException {
+    private void registerAndRunLanes() throws LaneAlreadyRunningException {
         for (Lane lane : laneService.getLanes()) {
             taskService.addLane(lane);
             if (lane.getActive()) {
