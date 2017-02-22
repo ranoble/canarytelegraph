@@ -4,12 +4,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // courtesy of: http://backtothefront.net/2011/storing-sets-keyvalue-pairs-single-db-column-hibernate-postgresql-hstore-type/
 public class HstoreHelper {
 
     private static final String K_V_SEPARATOR = "=>";
     private static final Map<String, String> escapeStrings = new HashMap<String, String>();
+    private static final Logger LOGGER = LoggerFactory.getLogger(HstoreHelper.class);
+
     static {
         escapeStrings.put(",", "__comma__");
         escapeStrings.put("=", "__equals__");
@@ -69,8 +73,7 @@ public class HstoreHelper {
                 v = v.trim().substring(1, v.length() - 1);
                 m.put(k, unescapeValue(v));
             } catch (java.lang.ArrayIndexOutOfBoundsException oob) {
-                System.out.println(token + ": failed to be mapped");
-                oob.printStackTrace();
+                LOGGER.warn("{}: failed to be mapped", token, oob);
             }
         }
         return m;
