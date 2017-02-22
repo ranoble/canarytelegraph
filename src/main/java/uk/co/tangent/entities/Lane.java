@@ -1,32 +1,5 @@
 package uk.co.tangent.entities;
 
-import java.io.IOException;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-import javax.persistence.Transient;
-
-import net.backtothefront.HstoreUserType;
-import nl.flotsam.xeger.Xeger;
-
-import org.hibernate.annotations.AttributeAccessor;
-import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
-
-import uk.co.tangent.data.CanaryTest;
-import uk.co.tangent.injection.ServiceAwareEntity;
-
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -34,6 +7,20 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import net.backtothefront.HstoreUserType;
+import nl.flotsam.xeger.Xeger;
+import org.hibernate.annotations.AttributeAccessor;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
+import uk.co.tangent.data.CanaryTest;
+import uk.co.tangent.injection.ServiceAwareEntity;
+
+import javax.persistence.*;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Entity
 @AttributeAccessor("field")

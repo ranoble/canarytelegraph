@@ -5,15 +5,19 @@ import org.hibernate.Session;
 import org.hibernate.criterion.Restrictions;
 import uk.co.tangent.entities.Lane;
 import uk.co.tangent.entities.Test;
+import uk.co.tangent.jmx.JMXBean;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 @Singleton
-public class LaneService {
+@JMXBean
+public class LaneService implements LaneServiceMXBean {
     private final Provider<Session> sessionProvider;
 
     protected Session getSession() {
@@ -83,5 +87,20 @@ public class LaneService {
     public Lane fromPath(String path) {
         Long id = Long.parseLong(path.substring("/lane/".length()));
         return getLane(id);
+    }
+
+    @Override
+    public List<Set<String>> getAllLanes() {
+        List<Lane> lanes = getLanes();
+        List<Set<String>> result = new ArrayList<>(lanes.size());
+        for (Lane lane : lanes) {
+            result.add(lane.serializeTests());
+        }
+        return result;
+    }
+
+    @Override
+    public int getLaneCount() {
+        return getLanes().size();
     }
 }

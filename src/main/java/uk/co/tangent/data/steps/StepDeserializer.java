@@ -17,17 +17,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import javax.inject.Inject;
+
 public class StepDeserializer extends JsonDeserializer<Step> {
 
     private static final String NAME = "type";
     private Map<String, Class> steps;
 
-    public StepDeserializer() {
+    @Inject
+    public StepDeserializer(Reflections reflections) {
         super();
-        String packagename = "uk.co.tangent.data.steps";
         steps = new HashMap<String, Class>();
 
-        final Reflections reflections = new Reflections(packagename);
         Set<Class<?>> types = reflections
                 .getTypesAnnotatedWith(PluginType.class);
         for (Class type : types) {
