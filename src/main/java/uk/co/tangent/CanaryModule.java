@@ -12,6 +12,8 @@ import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.ScanningHibernateBundle;
 import org.hibernate.Session;
 import org.reflections.Reflections;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.tangent.injection.ServiceAwareInjector;
 import uk.co.tangent.jmx.JMXBean;
 
@@ -24,6 +26,7 @@ import java.lang.management.ManagementFactory;
  * Created by sgyurko on 21/02/2017.
  */
 public class CanaryModule extends AbstractModule implements TypeListener {
+    private static final Logger LOGGER = LoggerFactory.getLogger(CanaryModule.class);
 
     @Override
     protected void configure() {
@@ -75,7 +78,7 @@ public class CanaryModule extends AbstractModule implements TypeListener {
                         ObjectName name = new ObjectName(i.getClass().getPackage().getName() + ":type=" + i.getClass().getSimpleName());
                         mBeanServer.registerMBean(i, name);
                     } catch (MalformedObjectNameException|NotCompliantMBeanException|InstanceAlreadyExistsException|MBeanRegistrationException e) {
-                        e.printStackTrace();
+                        LOGGER.warn("Error registering MXBean {}.{}", i.getClass().getPackage().getName(), i.getClass().getSimpleName());
                     }
                 }
             }

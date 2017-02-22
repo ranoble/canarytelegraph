@@ -3,6 +3,8 @@ package uk.co.tangent.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uk.co.tangent.data.CanaryTest;
 import uk.co.tangent.data.steps.Step;
 import uk.co.tangent.data.steps.confirmations.FailedResult;
@@ -15,7 +17,10 @@ import uk.co.tangent.jmx.JMXBean;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -23,6 +28,7 @@ import java.util.stream.Collectors;
 @Singleton
 @JMXBean
 public class TaskService implements TaskServiceMXBean {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
 
     private Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
     private ObjectMapper objectMapper;
@@ -65,7 +71,7 @@ public class TaskService implements TaskServiceMXBean {
                                         .beginTransaction();
 
                                 Test _test = laneService.loadRandomTest(lane);
-                                System.out.println("Loaded Test");
+                                LOGGER.info("Loaded Test");
                                 CanaryTest test = lane.parse(_test);
                                 lane.applyBindings(test);
                                 boolean healthy = true;
@@ -83,7 +89,7 @@ public class TaskService implements TaskServiceMXBean {
                                         healthy = false;
                                     }
                                 }
-                                System.out.println("Steps complete");
+                                LOGGER.info("Steps complete");
 
                                 TestResult testRes = new TestResult();
                                 testRes.setTest(_test);
@@ -101,7 +107,7 @@ public class TaskService implements TaskServiceMXBean {
                             }
                         }
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        LOGGER.error("Error running task", e);
                     }
                 }));
     }
@@ -130,5 +136,4 @@ public class TaskService implements TaskServiceMXBean {
     public void stop(int id) {
         tasks.keySet().stream().filter(x -> x.getId().intValue() == id).findFirst().ifPresent(this::stopLane);
     }
-
 }
