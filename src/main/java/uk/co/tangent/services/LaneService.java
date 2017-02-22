@@ -28,40 +28,49 @@ public class LaneService {
     }
 
     public Lane getLane(Long id) {
-
-        return getSession().load(Lane.class, id);
+        try (Session session = getSession()) {
+            return session.load(Lane.class, id);
+        }
     }
 
     public List<Lane> getLanes() {
-        return getSession().createCriteria(Lane.class).list();
+        try (Session session = getSession()) {
+            return session.createCriteria(Lane.class).list();
+        }
     }
 
     public List<Test> loadTests(Lane lane) {
-        Criteria cr = getSession().createCriteria(Test.class);
-        cr.add(Restrictions.eq("lane", lane));
-        return cr.list();
+        try (Session session = getSession()) {
+            Criteria cr = session.createCriteria(Test.class);
+            cr.add(Restrictions.eq("lane", lane));
+            return cr.list();
+        }
     }
 
     public Lane save(Lane lane) {
-        if (lane.getId() == null) {
-            getSession().save(lane);
-            /**
-             * TODO: Readd
-             */
-            // tasks.addLane(lane);
-        } else {
-            lane = (Lane) getSession().merge(lane);
+        try (Session session = getSession()) {
+            if (lane.getId() == null) {
+                    session.save(lane);
+                /**
+                 * TODO: Readd
+                 */
+                // tasks.addLane(lane);
+            } else {
+                lane = (Lane) session.merge(lane);
+            }
         }
 
         return lane;
     }
 
     public Test loadRandomTest(Lane lane) {
-        Random random = new Random();
-        lane = getSession().load(Lane.class, lane.getId());
-        List<Test> tests = lane.getTests();
-        int testIndex = random.nextInt(tests.size());
-        return tests.get(testIndex);
+        try (Session session = getSession()) {
+            Random random = new Random();
+            lane = session.load(Lane.class, lane.getId());
+            List<Test> tests = lane.getTests();
+            int testIndex = random.nextInt(tests.size());
+            return tests.get(testIndex);
+        }
     }
 
     public String getPath(Lane lane) {

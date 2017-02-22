@@ -15,6 +15,7 @@ import uk.co.tangent.entities.Test;
 import uk.co.tangent.entities.TestResult;
 
 import javax.inject.Inject;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,22 +29,18 @@ public class TaskService {
 
     Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
     private ObjectMapper objectMapper;
-    private final HibernateBundle<Config> hibernateBundle;
+    private final Provider<Session> sessionProvider;
     private final LaneService laneService;
     private final TestResultService testResultService;
 
     protected Session getSession() {
-        return hibernateBundle.getSessionFactory().getCurrentSession();
-    }
-
-    protected SessionFactory getSessionFactory() {
-        return hibernateBundle.getSessionFactory();
+        return sessionProvider.get();
     }
 
     @Inject
-    public TaskService(HibernateBundle<Config> hibernateBundle, LaneService laneService, TestResultService testResultService) {
+    public TaskService(Provider<Session> sessionProvider, LaneService laneService, TestResultService testResultService) {
         objectMapper = new ObjectMapper();
-        this.hibernateBundle = hibernateBundle;
+        this.sessionProvider = sessionProvider;
         this.testResultService = testResultService;
         this.laneService = laneService;
     }
@@ -66,8 +63,7 @@ public class TaskService {
                     try {
                         List<Result> testResults = new ArrayList<>();
                         while (!Thread.currentThread().isInterrupted()) {
-                            try (Session session = getSessionFactory()
-                                    .openSession()) {
+                            try (Session session = getSession()) {
                                 Transaction transaction = session
                                         .beginTransaction();
 
@@ -98,11 +94,12 @@ public class TaskService {
                                 testRes.setLane(lane);
                                 testRes.setResults(objectMapper
                                         .writeValueAsString(testResults));
-
-                                testResultService.saveResults(session, testRes);
-
                                 transaction.commit();
                                 testResults.clear();
+
+                                // Persist results
+                                testResultService.saveResults(testRes);
+
                                 lane.sleep();
                             }
                         }

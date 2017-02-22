@@ -14,23 +14,19 @@ import javax.inject.Singleton;
 @Singleton
 public class TestResultService {
     private final Provider<Session> sessionProvider;
-    private final Provider<HibernateBundle<Config>> hibernateBundleProvider;
 
     @Inject
-    public TestResultService(Provider<Session> sessionProvider, Provider<HibernateBundle<Config>> hibernateBundleProvider) {
+    public TestResultService(Provider<Session> sessionProvider) {
         this.sessionProvider = sessionProvider;
-        this.hibernateBundleProvider = hibernateBundleProvider;
-    }
-
-    public SessionFactory getSessionFactory() {
-        return hibernateBundleProvider.get().getSessionFactory();
     }
 
     protected Session getSession() {
         return sessionProvider.get();
     }
 
-    public void saveResults(Session session, TestResult testRes) {
-        session.save(testRes);
+    public void saveResults(TestResult testRes) {
+        try (Session session = getSession()) {
+            session.save(testRes);
+        }
     }
 }
