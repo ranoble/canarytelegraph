@@ -42,7 +42,6 @@ public class CanaryModule extends AbstractModule {
                     org.hibernate.cfg.Configuration configuration) {
                 configuration.setInterceptor(serviceAwareInjectorProvider.get());
             }
-
         };
     }
 }
