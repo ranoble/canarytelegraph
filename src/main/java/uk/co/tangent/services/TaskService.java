@@ -63,45 +63,39 @@ public class TaskService {
                     try {
                         List<Result> testResults = new ArrayList<>();
                         while (!Thread.currentThread().isInterrupted()) {
-                            try (Session session = getSession()) {
-                                Transaction transaction = session
-                                        .beginTransaction();
+                            Test _test = laneService.loadRandomTest(lane);
+                            LOGGER.info("Loaded Test");
+                            CanaryTest test = lane.parse(_test);
+                            lane.applyBindings(test);
+                            boolean healthy = true;
 
-                                Test _test = laneService.loadRandomTest(lane);
-                                LOGGER.info("Loaded Test");
-                                CanaryTest test = lane.parse(_test);
-                                lane.applyBindings(test);
-                                boolean healthy = true;
-
-                                for (Step step : test.getSteps()) {
-                                    List<Result> stepResults = step.call();
-                                    for (Result result : stepResults) {
-                                        result.setStep(step.getName());
-                                        result.setTest(test.getName());
-                                    }
-                                    testResults.addAll(stepResults);
+                            for (Step step : test.getSteps()) {
+                                List<Result> stepResults = step.call();
+                                for (Result result : stepResults) {
+                                    result.setStep(step.getName());
+                                    result.setTest(test.getName());
                                 }
-                                for (Result result : testResults) {
-                                    if (result instanceof FailedResult) {
-                                        healthy = false;
-                                    }
-                                }
-                                LOGGER.info("Steps complete");
-
-                                TestResult testRes = new TestResult();
-                                testRes.setTest(_test);
-                                testRes.setHealthy(healthy);
-                                testRes.setLane(lane);
-                                testRes.setResults(objectMapper
-                                        .writeValueAsString(testResults));
-                                transaction.commit();
-                                testResults.clear();
-
-                                // Persist results
-                                testResultService.saveResults(testRes);
-
-                                lane.sleep();
+                                testResults.addAll(stepResults);
                             }
+                            for (Result result : testResults) {
+                                if (result instanceof FailedResult) {
+                                    healthy = false;
+                                }
+                            }
+                            LOGGER.info("Steps complete");
+
+                            TestResult testRes = new TestResult();
+                            testRes.setTest(_test);
+                            testRes.setHealthy(healthy);
+                            testRes.setLane(lane);
+                            testRes.setResults(objectMapper
+                                    .writeValueAsString(testResults));
+                            testResults.clear();
+
+                            // Persist results
+                            testResultService.saveResults(testRes);
+
+                            lane.sleep();
                         }
                     } catch (Exception e) {
                         LOGGER.error("Error running task", e);
