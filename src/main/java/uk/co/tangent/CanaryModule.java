@@ -8,7 +8,6 @@ import io.dropwizard.hibernate.ScanningHibernateBundle;
 import org.hibernate.Session;
 import uk.co.tangent.injection.ServiceAwareInjector;
 
-import javax.inject.Provider;
 import javax.inject.Singleton;
 
 /**
@@ -21,13 +20,13 @@ public class CanaryModule extends AbstractModule {
     }
 
     @Provides
-    Session getSession(Provider<HibernateBundle<Config>> hibernateBundleProvider) {
-        return hibernateBundleProvider.get().getSessionFactory().openSession();
+    Session getSession(HibernateBundle<Config> hibernateBundle) {
+        return hibernateBundle.getSessionFactory().openSession();
     }
 
     @Provides
     @Singleton
-    HibernateBundle<Config> getHibernate(Provider<ServiceAwareInjector> serviceAwareInjectorProvider) {
+    HibernateBundle<Config> getHibernate(ServiceAwareInjector serviceAwareInjector) {
         return new ScanningHibernateBundle<Config>(
                 "uk.co.tangent.entities") {
 
@@ -40,7 +39,7 @@ public class CanaryModule extends AbstractModule {
             @Override
             protected void configure(
                     org.hibernate.cfg.Configuration configuration) {
-                configuration.setInterceptor(serviceAwareInjectorProvider.get());
+                configuration.setInterceptor(serviceAwareInjector);
             }
         };
     }
