@@ -5,6 +5,7 @@ import com.google.inject.Provides;
 import io.dropwizard.db.PooledDataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.ScanningHibernateBundle;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import uk.co.tangent.injection.ServiceAwareInjector;
 
@@ -21,7 +22,13 @@ public class CanaryModule extends AbstractModule {
 
     @Provides
     Session getSession(HibernateBundle<Config> hibernateBundle) {
-        return hibernateBundle.getSessionFactory().openSession();
+        Session session;
+        try {
+            session = hibernateBundle.getSessionFactory().getCurrentSession();
+        } catch (HibernateException e) {
+            session = hibernateBundle.getSessionFactory().openSession();
+        }
+        return session;
     }
 
     @Provides

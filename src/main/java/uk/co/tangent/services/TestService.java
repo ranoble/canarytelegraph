@@ -31,34 +31,25 @@ public class TestService {
     }
 
     public Test getTest(Long id) {
-        try (Session session = getSession()) {
-            return session.load(Test.class, id);
-        }
+        return getSession().load(Test.class, id);
     }
 
     public List<Test> getTests() {
-        try (Session session = getSession()) {
-            return session.createCriteria(Test.class).list();
-        }
+        return getSession().createCriteria(Test.class).list();
     }
 
     public Test save(Test test) {
-        try (Session session = getSession()) {
-
-            if (test.getId() == null) {
-                session.save(test);
-            } else {
-                test = (Test) session.merge(test);
-            }
+        if (test.getId() == null) {
+            getSession().save(test);
+        } else {
+            test = (Test) getSession().merge(test);
         }
 
         return test;
     }
 
     public Test delete(Test test) {
-        try (Session session = getSession()) {
-            session.delete(test);
-        }
+        getSession().delete(test);
         return test;
     }
 }
