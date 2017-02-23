@@ -13,40 +13,40 @@ import javax.inject.Singleton;
 
 @Singleton
 public class ServiceRegistry {
-    private final Provider<TestService> testService;
-    private final Provider<TaskService> tasks;
-    private final Provider<LaneService> laneService;
-    private final Provider<TestResultService> testResult;
-    private final Provider<HibernateBundle<Config>> hibernate;
+    private final TestService testService;
+    private final TaskService tasks;
+    private final LaneService laneService;
+    private final TestResultService testResult;
+    private final HibernateBundle<Config> hibernate;
 
     @Inject
-    public ServiceRegistry(Provider<TestService> testService, Provider<TaskService> tasks, Provider<LaneService> laneService,
-                           Provider<TestResultService> testResult, Provider<HibernateBundle<Config>> hibernateBundleProvider) {
+    public ServiceRegistry(TestService testService, TaskService tasks, LaneService laneService,
+                           TestResultService testResult, HibernateBundle<Config> hibernateBundle) {
         this.testResult = testResult;
         this.testService = testService;
         this.laneService = laneService;
         this.tasks = tasks;
-        this.hibernate = hibernateBundleProvider;
+        this.hibernate = hibernateBundle;
     }
 
     public TestService getTestService() {
-        return testService.get();
+        return testService;
     }
 
     public TaskService getTasks() {
-        return tasks.get();
+        return tasks;
     }
 
     public LaneService getLaneService() {
-        return laneService.get();
+        return laneService;
     }
 
 
     public TestResultService getTestResult() {
-        return testResult.get();
+        return testResult;
     }
 
     public HibernateBundle<Config> getHibernate() {
-        return hibernate.get();
+        return hibernate;
     }
 }

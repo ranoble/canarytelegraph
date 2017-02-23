@@ -6,7 +6,7 @@ database:
   user: postgres
 
   # the password
-  password: postgres
+  password: password
 
   # the JDBC URL
   url: jdbc:postgresql://localhost/canary

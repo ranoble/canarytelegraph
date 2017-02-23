@@ -14,13 +14,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 @JsonDeserialize(using = StepDeserializer.class)
 public abstract class Step {
     @JsonProperty(required = true)
-    protected String name;
+    private String name;
 
     @JsonProperty(required = true)
-    protected String type;
+    private String type;
 
     @JacksonInject
-    protected Map<String, String> valueBindings;
+    private Map<String, String> valueBindings;
 
     public String getType() {
         return type;

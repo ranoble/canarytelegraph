@@ -28,24 +28,25 @@ public class LaneService {
     }
 
     public Lane getLane(Long id) {
-
-        return getSession().load(Lane.class, id);
+            return getSession().load(Lane.class, id);
     }
 
+    @SuppressWarnings("unchecked")
     public List<Lane> getLanes() {
-        return getSession().createCriteria(Lane.class).list();
+            return getSession().createCriteria(Lane.class).list();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Test> loadTests(Lane lane) {
-        Criteria cr = getSession().createCriteria(Test.class);
-        cr.add(Restrictions.eq("lane", lane));
-        return cr.list();
+            Criteria cr = getSession().createCriteria(Test.class);
+            cr.add(Restrictions.eq("lane", lane));
+            return cr.list();
     }
 
     public Lane save(Lane lane) {
         if (lane.getId() == null) {
-            getSession().save(lane);
-            /**
+                getSession().save(lane);
+            /*
              * TODO: Readd
              */
             // tasks.addLane(lane);
@@ -57,11 +58,11 @@ public class LaneService {
     }
 
     public Test loadRandomTest(Lane lane) {
-        Random random = new Random();
-        lane = getSession().load(Lane.class, lane.getId());
-        List<Test> tests = lane.getTests();
-        int testIndex = random.nextInt(tests.size());
-        return tests.get(testIndex);
+            Random random = new Random();
+            lane = getSession().load(Lane.class, lane.getId());
+            List<Test> tests = lane.getTests();
+            int testIndex = random.nextInt(tests.size());
+            return tests.get(testIndex);
     }
 
     public String getPath(Lane lane) {

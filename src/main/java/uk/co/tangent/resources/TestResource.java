@@ -2,38 +2,32 @@ package uk.co.tangent.resources;
 
 import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.views.View;
-
-import java.util.List;
-
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-
 import uk.co.tangent.entities.Test;
-import uk.co.tangent.injection.ServiceRegistry;
 import uk.co.tangent.resources.view.TestView;
 import uk.co.tangent.services.TestService;
+
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import java.util.List;
 
 @Path("/test")
 @Produces(MediaType.APPLICATION_JSON)
 public class TestResource {
 
-    TestService service;
+    private final TestService service;
 
-    public TestResource(ServiceRegistry services) {
-        this.service = services.getTestService();
+    @Inject
+    public TestResource(TestService testService) {
+        this.service = testService;
     }
 
     @GET
     @Path("/{id}")
     @UnitOfWork
     public Test getTest(@PathParam("id") Long id) {
-        return service.getTest(id);
+        Test test = service.getTest(id);
+        return test;
     }
 
     @POST
