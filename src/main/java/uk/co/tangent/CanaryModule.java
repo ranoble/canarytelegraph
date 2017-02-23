@@ -20,8 +20,6 @@ import com.google.inject.Provides;
  */
 public class CanaryModule extends AbstractModule {
 
-    HibernateBundle<Config> bundle;
-
     @Override
     protected void configure() {
     }
