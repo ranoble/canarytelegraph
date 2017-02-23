@@ -1,23 +1,25 @@
 package uk.co.tangent.services;
 
-import org.hibernate.Session;
-import uk.co.tangent.entities.Test;
+import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.List;
+
+import org.hibernate.SessionFactory;
+
+import uk.co.tangent.entities.Test;
 
 @Singleton
 public class TestService {
-    private final Provider<Session> sessionProvider;
+    private final Provider<SessionFactory> sessionProvider;
 
     @Inject
-    public TestService(Provider<Session> sessionProvider) {
+    public TestService(Provider<SessionFactory> sessionProvider) {
         this.sessionProvider = sessionProvider;
     }
 
-    protected Session getSession() {
+    protected SessionFactory getSessionFactory() {
         return sessionProvider.get();
     }
 
@@ -31,34 +33,29 @@ public class TestService {
     }
 
     public Test getTest(Long id) {
-        try (Session session = getSession()) {
-            return session.load(Test.class, id);
-        }
+
+        return getSessionFactory().getCurrentSession().load(Test.class, id);
+
     }
 
     public List<Test> getTests() {
-        try (Session session = getSession()) {
-            return session.createCriteria(Test.class).list();
-        }
+        return getSessionFactory().getCurrentSession()
+                .createCriteria(Test.class).list();
     }
 
     public Test save(Test test) {
-        try (Session session = getSession()) {
 
-            if (test.getId() == null) {
-                session.save(test);
-            } else {
-                test = (Test) session.merge(test);
-            }
+        if (test.getId() == null) {
+            getSessionFactory().getCurrentSession().save(test);
+        } else {
+            test = (Test) getSessionFactory().getCurrentSession().merge(test);
         }
 
         return test;
     }
 
     public Test delete(Test test) {
-        try (Session session = getSession()) {
-            session.delete(test);
-        }
+        getSessionFactory().getCurrentSession().delete(test);
         return test;
     }
 }

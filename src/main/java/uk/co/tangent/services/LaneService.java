@@ -1,78 +1,75 @@
 package uk.co.tangent.services;
 
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
-import uk.co.tangent.entities.Lane;
-import uk.co.tangent.entities.Test;
+import java.util.List;
+import java.util.Random;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.List;
-import java.util.Random;
+
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+
+import uk.co.tangent.entities.Lane;
+import uk.co.tangent.entities.Test;
 
 @Singleton
 public class LaneService {
-    private final Provider<Session> sessionProvider;
+    private final Provider<SessionFactory> sessionProvider;
 
-    protected Session getSession() {
+    protected SessionFactory getSessionFactory() {
         return sessionProvider.get();
     }
 
-    // private TaskService tasks;
-
     @Inject
-    public LaneService(Provider<Session> sessionProvider) {
+    public LaneService(Provider<SessionFactory> sessionProvider) {
         this.sessionProvider = sessionProvider;
     }
 
     public Lane getLane(Long id) {
-        try (Session session = getSession()) {
-            return session.load(Lane.class, id);
-        }
+        return getSessionFactory().getCurrentSession().load(Lane.class, id);
     }
 
     @SuppressWarnings("unchecked")
     public List<Lane> getLanes() {
-        try (Session session = getSession()) {
-            return session.createCriteria(Lane.class).list();
-        }
+
+        return getSessionFactory().getCurrentSession()
+                .createCriteria(Lane.class).list();
+
     }
 
     @SuppressWarnings("unchecked")
     public List<Test> loadTests(Lane lane) {
-        try (Session session = getSession()) {
-            Criteria cr = session.createCriteria(Test.class);
-            cr.add(Restrictions.eq("lane", lane));
-            return cr.list();
-        }
+
+        Criteria cr = getSessionFactory().getCurrentSession().createCriteria(
+                Test.class);
+        cr.add(Restrictions.eq("lane", lane));
+        return cr.list();
+
     }
 
     public Lane save(Lane lane) {
-        try (Session session = getSession()) {
-            if (lane.getId() == null) {
-                    session.save(lane);
-                /*
-                 * TODO: Readd
-                 */
-                // tasks.addLane(lane);
-            } else {
-                lane = (Lane) session.merge(lane);
-            }
+        if (lane.getId() == null) {
+            getSessionFactory().getCurrentSession().save(lane);
+            /*
+             * TODO: Readd
+             */
+            // tasks.addLane(lane);
+        } else {
+            lane = (Lane) getSessionFactory().getCurrentSession().merge(lane);
         }
 
         return lane;
     }
 
     public Test loadRandomTest(Lane lane) {
-        try (Session session = getSession()) {
-            Random random = new Random();
-            lane = session.load(Lane.class, lane.getId());
-            List<Test> tests = lane.getTests();
-            int testIndex = random.nextInt(tests.size());
-            return tests.get(testIndex);
-        }
+        Random random = new Random();
+        lane = getSessionFactory().getCurrentSession().load(Lane.class,
+                lane.getId());
+        List<Test> tests = lane.getTests();
+        int testIndex = random.nextInt(tests.size());
+        return tests.get(testIndex);
     }
 
     public String getPath(Lane lane) {

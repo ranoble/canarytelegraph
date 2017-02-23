@@ -1,22 +1,22 @@
 package uk.co.tangent;
 
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
-import uk.co.tangent.entities.Lane;
+
+import javax.inject.Inject;
+
 import uk.co.tangent.injection.ServiceRegistry;
 import uk.co.tangent.resources.LaneResource;
 import uk.co.tangent.resources.TestResource;
-import uk.co.tangent.services.LaneAlreadyRunningException;
 import uk.co.tangent.services.LaneService;
 import uk.co.tangent.services.TaskService;
 
-import javax.inject.Inject;
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class App extends Application<Config> {
 
@@ -35,8 +35,9 @@ public class App extends Application<Config> {
     }
 
     @Inject
-    public App(ServiceRegistry serviceRegistry, LaneService laneService, TaskService taskService,
-               LaneResource laneResource, TestResource testResource) {
+    public App(ServiceRegistry serviceRegistry, LaneService laneService,
+            TaskService taskService, LaneResource laneResource,
+            TestResource testResource) {
         services = serviceRegistry;
         this.taskService = taskService;
         this.laneService = laneService;
@@ -66,16 +67,9 @@ public class App extends Application<Config> {
     public void run(Config config, Environment env) throws Exception {
         env.jersey().register(laneResource);
         env.jersey().register(testResource);
+        // env.jersey().register(new DebuggingExceptionMapper());
 
-        registerAndRunLanes();
+        taskService.startActiveLanes();
     }
 
-    private void registerAndRunLanes() throws LaneAlreadyRunningException {
-        for (Lane lane : laneService.getLanes()) {
-            taskService.addLane(lane);
-            if (lane.getActive()) {
-                taskService.startLane(lane);
-            }
-        }
-    }
 }

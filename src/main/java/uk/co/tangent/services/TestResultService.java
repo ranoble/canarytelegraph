@@ -1,28 +1,28 @@
 package uk.co.tangent.services;
 
-import org.hibernate.Session;
-import uk.co.tangent.entities.TestResult;
-
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
 
+import org.hibernate.SessionFactory;
+
+import uk.co.tangent.entities.TestResult;
+
 @Singleton
 public class TestResultService {
-    private final Provider<Session> sessionProvider;
+    private final Provider<SessionFactory> sessionProvider;
 
     @Inject
-    public TestResultService(Provider<Session> sessionProvider) {
+    public TestResultService(Provider<SessionFactory> sessionProvider) {
         this.sessionProvider = sessionProvider;
     }
 
-    protected Session getSession() {
+    protected SessionFactory getSessionFactory() {
         return sessionProvider.get();
     }
 
     public void saveResults(TestResult testRes) {
-        try (Session session = getSession()) {
-            session.save(testRes);
-        }
+        getSessionFactory().getCurrentSession().save(testRes);
+
     }
 }
