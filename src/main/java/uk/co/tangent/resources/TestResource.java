@@ -26,7 +26,8 @@ public class TestResource {
     @Path("/{id}")
     @UnitOfWork
     public Test getTest(@PathParam("id") Long id) {
-        return service.getTest(id);
+        Test test = service.getTest(id);
+        return test;
     }
 
     @POST

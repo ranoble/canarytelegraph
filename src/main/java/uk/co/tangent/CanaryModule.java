@@ -10,6 +10,7 @@ import com.google.inject.spi.TypeListener;
 import io.dropwizard.db.PooledDataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.ScanningHibernateBundle;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -17,7 +18,6 @@ import org.slf4j.LoggerFactory;
 import uk.co.tangent.injection.ServiceAwareInjector;
 import uk.co.tangent.jmx.JMXBean;
 
-import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.management.*;
 import java.lang.management.ManagementFactory;
@@ -36,13 +36,19 @@ public class CanaryModule extends AbstractModule implements TypeListener {
     }
 
     @Provides
-    Session getSession(Provider<HibernateBundle<Config>> hibernateBundleProvider) {
-        return hibernateBundleProvider.get().getSessionFactory().openSession();
+    Session getSession(HibernateBundle<Config> hibernateBundle) {
+        Session session;
+        try {
+            session = hibernateBundle.getSessionFactory().getCurrentSession();
+        } catch (HibernateException e) {
+            session = hibernateBundle.getSessionFactory().openSession();
+        }
+        return session;
     }
 
     @Provides
     @Singleton
-    HibernateBundle<Config> getHibernate(Provider<ServiceAwareInjector> serviceAwareInjectorProvider) {
+    HibernateBundle<Config> getHibernate(ServiceAwareInjector serviceAwareInjector) {
         return new ScanningHibernateBundle<Config>(
                 "uk.co.tangent.entities") {
 
@@ -55,9 +61,8 @@ public class CanaryModule extends AbstractModule implements TypeListener {
             @Override
             protected void configure(
                     org.hibernate.cfg.Configuration configuration) {
-                configuration.setInterceptor(serviceAwareInjectorProvider.get());
+                configuration.setInterceptor(serviceAwareInjector);
             }
-
         };
     }
 

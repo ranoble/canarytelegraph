@@ -21,8 +21,6 @@ public class TestResultService {
     }
 
     public void saveResults(TestResult testRes) {
-        try (Session session = getSession()) {
-            session.save(testRes);
-        }
+        getSession().save(testRes);
     }
 }
