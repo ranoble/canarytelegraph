@@ -1,52 +1,53 @@
 package uk.co.tangent.services;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.dropwizard.hibernate.HibernateBundle;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.Transaction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import uk.co.tangent.Config;
-import uk.co.tangent.data.CanaryTest;
-import uk.co.tangent.data.steps.Step;
-import uk.co.tangent.data.steps.confirmations.FailedResult;
-import uk.co.tangent.data.steps.confirmations.Result;
-import uk.co.tangent.entities.Lane;
-import uk.co.tangent.entities.Test;
-import uk.co.tangent.entities.TestResult;
+import io.dropwizard.hibernate.UnitOfWorkAwareProxyFactory;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
+
+import org.hibernate.SessionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import uk.co.tangent.entities.Lane;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 @Singleton
 public class TaskService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
+    private static final Logger LOGGER = LoggerFactory
+            .getLogger(TaskService.class);
 
-    Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
+    private Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
     private ObjectMapper objectMapper;
-    private final HibernateBundle<Config> hibernateBundle;
+    private final Provider<SessionFactory> sessionProvider;
     private final LaneService laneService;
     private final TestResultService testResultService;
 
-    protected Session getSession() {
-        return hibernateBundle.getSessionFactory().getCurrentSession();
-    }
+    private Provider<UnitOfWorkAwareProxyFactory> unitOfWorkFactoryProvider;
 
     protected SessionFactory getSessionFactory() {
-        return hibernateBundle.getSessionFactory();
+        return sessionProvider.get();
+    }
+
+    protected UnitOfWorkAwareProxyFactory getUnitOfWorkFactory() {
+        return unitOfWorkFactoryProvider.get();
     }
 
     @Inject
-    public TaskService(HibernateBundle<Config> hibernateBundle, LaneService laneService, TestResultService testResultService) {
+    public TaskService(Provider<SessionFactory> sessionProvider,
+            Provider<UnitOfWorkAwareProxyFactory> unitOfWorkFactoryProvider,
+            LaneService laneService, TestResultService testResultService) {
         objectMapper = new ObjectMapper();
-        this.hibernateBundle = hibernateBundle;
+        this.unitOfWorkFactoryProvider = unitOfWorkFactoryProvider;
+        this.sessionProvider = sessionProvider;
         this.testResultService = testResultService;
         this.laneService = laneService;
     }
@@ -63,56 +64,18 @@ public class TaskService {
             throw new LaneAlreadyRunningException(String.format(
                     "Lane: %s is currently running", lane.getName()));
         }
-        tasks.put(
-                lane,
-                CompletableFuture.runAsync(() -> {
-                    try {
-                        List<Result> testResults = new ArrayList<>();
-                        while (!Thread.currentThread().isInterrupted()) {
-                            try (Session session = getSessionFactory()
-                                    .openSession()) {
-                                Transaction transaction = session
-                                        .beginTransaction();
+        tasks.put(lane, CompletableFuture.runAsync(() -> {
+            try {
+                while (!Thread.currentThread().isInterrupted()) {
+                    Task task = getUnitOfWorkFactory().create(Task.class);
+                    task.runTask(objectMapper, laneService, lane,
+                            testResultService);
+                }
+            } catch (Exception e) {
+                LOGGER.error("Error running task", e);
+            }
+        }));
 
-                                Test _test = laneService.loadRandomTest(lane);
-                                LOGGER.info("Loaded Test");
-                                CanaryTest test = lane.parse(_test);
-                                lane.applyBindings(test);
-                                boolean healthy = true;
-
-                                for (Step step : test.getSteps()) {
-                                    List<Result> stepResults = step.call();
-                                    for (Result result : stepResults) {
-                                        result.setStep(step.getName());
-                                        result.setTest(test.getName());
-                                    }
-                                    testResults.addAll(stepResults);
-                                }
-                                for (Result result : testResults) {
-                                    if (result instanceof FailedResult) {
-                                        healthy = false;
-                                    }
-                                }
-                                LOGGER.info("Steps complete");
-
-                                TestResult testRes = new TestResult();
-                                testRes.setTest(_test);
-                                testRes.setHealthy(healthy);
-                                testRes.setLane(lane);
-                                testRes.setResults(objectMapper
-                                        .writeValueAsString(testResults));
-
-                                testResultService.saveResults(session, testRes);
-
-                                transaction.commit();
-                                testResults.clear();
-                                lane.sleep();
-                            }
-                        }
-                    } catch (Exception e) {
-                        LOGGER.error("Error running task", e);
-                    }
-                }));
     }
 
     public void stopLane(Lane lane) {
@@ -123,5 +86,11 @@ public class TaskService {
         for (Entry<Lane, CompletableFuture<?>> lanes : tasks.entrySet()) {
             lanes.getValue().cancel(true);
         }
+    }
+
+    public void startActiveLanes() throws LaneAlreadyRunningException {
+        Task task = getUnitOfWorkFactory().create(Task.class);
+        task.startTasks(laneService, this);
+
     }
 }

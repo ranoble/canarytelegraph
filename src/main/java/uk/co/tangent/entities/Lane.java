@@ -75,7 +75,7 @@ public class Lane extends ServiceAwareEntity {
         final InjectableValues.Std injectableValues = new InjectableValues.Std();
         injectableValues.addValue(Map.class, bindings);
         objectMapper.setInjectableValues(injectableValues);
-
+        random = new Random();
     }
 
     public Long getId() {

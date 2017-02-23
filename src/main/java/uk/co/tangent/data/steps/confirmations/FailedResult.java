@@ -4,12 +4,12 @@ public class FailedResult extends Result {
 
     public FailedResult(Confirmation confirmation, Throwable e) {
         this(confirmation, e.getMessage());
-        successful = false;
+        setSuccessful(false);
     }
 
     public FailedResult(Confirmation confirmation, String message) {
-        this.confirmation = confirmation;
-        this.message = message;
+        setConfirmation(confirmation);
+        setMessage(message);
     }
 
 }

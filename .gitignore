@@ -13,3 +13,5 @@ buildNumber.properties
 .mvn/timing.properties
 .idea
 *.iml
+server.yml
+

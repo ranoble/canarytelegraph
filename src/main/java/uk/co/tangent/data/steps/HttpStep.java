@@ -208,16 +208,4 @@ public class HttpStep extends Step {
         }
         return request;
     }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void setName(String name) {
-        // TODO Auto-generated method stub
-        this.name = name;
-    }
-
 }

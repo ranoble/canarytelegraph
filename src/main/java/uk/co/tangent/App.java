@@ -1,22 +1,22 @@
 package uk.co.tangent;
 
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
-import uk.co.tangent.entities.Lane;
+
+import javax.inject.Inject;
+
 import uk.co.tangent.injection.ServiceRegistry;
 import uk.co.tangent.resources.LaneResource;
 import uk.co.tangent.resources.TestResource;
-import uk.co.tangent.services.LaneAlreadyRunningException;
 import uk.co.tangent.services.LaneService;
 import uk.co.tangent.services.TaskService;
 
-import javax.inject.Inject;
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class App extends Application<Config> {
 
@@ -26,6 +26,8 @@ public class App extends Application<Config> {
     private final ServiceRegistry services;
     private final LaneService laneService;
     private final TaskService taskService;
+    private final LaneResource laneResource;
+    private final TestResource testResource;
 
     public static void main(String[] args) throws Exception {
         Injector injector = Guice.createInjector(new CanaryModule());
@@ -33,10 +35,14 @@ public class App extends Application<Config> {
     }
 
     @Inject
-    public App(ServiceRegistry serviceRegistry, LaneService laneService, TaskService taskService) {
+    public App(ServiceRegistry serviceRegistry, LaneService laneService,
+            TaskService taskService, LaneResource laneResource,
+            TestResource testResource) {
         services = serviceRegistry;
         this.taskService = taskService;
         this.laneService = laneService;
+        this.laneResource = laneResource;
+        this.testResource = testResource;
     }
 
     @Override
@@ -55,25 +61,15 @@ public class App extends Application<Config> {
         injectableValues.addValue(ServiceRegistry.class, services);
 
         bootstrap.getObjectMapper().setInjectableValues(injectableValues);
-
     }
 
     @Override
     public void run(Config config, Environment env) throws Exception {
-        final LaneResource lanes = new LaneResource(services);
-        env.jersey().register(lanes);
-        registerAndRunLanes();
+        env.jersey().register(laneResource);
+        env.jersey().register(testResource);
+        // env.jersey().register(new DebuggingExceptionMapper());
 
-        final TestResource tests = new TestResource(services);
-        env.jersey().register(tests);
+        taskService.startActiveLanes();
     }
 
-    protected void registerAndRunLanes() throws LaneAlreadyRunningException {
-        for (Lane lane : laneService.getLanes()) {
-            taskService.addLane(lane);
-            if (lane.getActive()) {
-                taskService.startLane(lane);
-            }
-        }
-    }
 }

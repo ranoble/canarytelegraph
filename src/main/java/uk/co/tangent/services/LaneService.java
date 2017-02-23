@@ -1,56 +1,63 @@
 package uk.co.tangent.services;
 
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
-import uk.co.tangent.entities.Lane;
-import uk.co.tangent.entities.Test;
+import java.util.List;
+import java.util.Random;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import java.util.List;
-import java.util.Random;
+
+import org.hibernate.Criteria;
+import org.hibernate.SessionFactory;
+import org.hibernate.criterion.Restrictions;
+
+import uk.co.tangent.entities.Lane;
+import uk.co.tangent.entities.Test;
 
 @Singleton
 public class LaneService {
-    private final Provider<Session> sessionProvider;
+    private final Provider<SessionFactory> sessionProvider;
 
-    protected Session getSession() {
+    protected SessionFactory getSessionFactory() {
         return sessionProvider.get();
     }
 
-    // private TaskService tasks;
-
     @Inject
-    public LaneService(Provider<Session> sessionProvider) {
+    public LaneService(Provider<SessionFactory> sessionProvider) {
         this.sessionProvider = sessionProvider;
     }
 
     public Lane getLane(Long id) {
-
-        return getSession().load(Lane.class, id);
+        return getSessionFactory().getCurrentSession().load(Lane.class, id);
     }
 
+    @SuppressWarnings("unchecked")
     public List<Lane> getLanes() {
-        return getSession().createCriteria(Lane.class).list();
+
+        return getSessionFactory().getCurrentSession()
+                .createCriteria(Lane.class).list();
+
     }
 
+    @SuppressWarnings("unchecked")
     public List<Test> loadTests(Lane lane) {
-        Criteria cr = getSession().createCriteria(Test.class);
+
+        Criteria cr = getSessionFactory().getCurrentSession().createCriteria(
+                Test.class);
         cr.add(Restrictions.eq("lane", lane));
         return cr.list();
+
     }
 
     public Lane save(Lane lane) {
         if (lane.getId() == null) {
-            getSession().save(lane);
-            /**
+            getSessionFactory().getCurrentSession().save(lane);
+            /*
              * TODO: Readd
              */
             // tasks.addLane(lane);
         } else {
-            lane = (Lane) getSession().merge(lane);
+            lane = (Lane) getSessionFactory().getCurrentSession().merge(lane);
         }
 
         return lane;
@@ -58,7 +65,8 @@ public class LaneService {
 
     public Test loadRandomTest(Lane lane) {
         Random random = new Random();
-        lane = getSession().load(Lane.class, lane.getId());
+        lane = getSessionFactory().getCurrentSession().load(Lane.class,
+                lane.getId());
         List<Test> tests = lane.getTests();
         int testIndex = random.nextInt(tests.size());
         return tests.get(testIndex);

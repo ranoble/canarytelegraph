@@ -5,6 +5,7 @@ import io.dropwizard.jersey.PATCH;
 
 import java.util.List;
 
+import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -16,7 +17,6 @@ import javax.ws.rs.core.MediaType;
 
 import uk.co.tangent.entities.Lane;
 import uk.co.tangent.entities.Test;
-import uk.co.tangent.injection.ServiceRegistry;
 import uk.co.tangent.services.LaneService;
 import uk.co.tangent.services.TestService;
 
@@ -24,12 +24,13 @@ import uk.co.tangent.services.TestService;
 @Produces(MediaType.APPLICATION_JSON)
 public class LaneResource {
 
-    LaneService service;
-    TestService tests;
+    private final LaneService service;
+    private final TestService tests;
 
-    public LaneResource(ServiceRegistry services) {
-        this.service = services.getLaneService();
-        this.tests = services.getTestService();
+    @Inject
+    public LaneResource(LaneService laneService, TestService testService) {
+        this.service = laneService;
+        this.tests = testService;
     }
 
     @GET
@@ -57,7 +58,12 @@ public class LaneResource {
     @GET
     @UnitOfWork
     public List<Lane> list() {
-        return service.getLanes();
+        try {
+            return service.getLanes();
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        }
     }
 
     @PATCH

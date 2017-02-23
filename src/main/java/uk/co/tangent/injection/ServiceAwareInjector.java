@@ -8,7 +8,7 @@ import javax.inject.Provider;
 import java.io.Serializable;
 
 public class ServiceAwareInjector extends EmptyInterceptor {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -6731622938182113109L;
     private Provider<ServiceRegistry> servicesProvider;
 
     @Inject

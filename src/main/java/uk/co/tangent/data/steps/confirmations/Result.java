@@ -3,11 +3,11 @@ package uk.co.tangent.data.steps.confirmations;
 
 public class Result {
 
-    protected String message;
-    protected Confirmation confirmation;
-    protected String step;
-    protected String test;
-    public boolean successful;
+    private String message;
+    private Confirmation confirmation;
+    private String step;
+    private String test;
+    private boolean successful;
 
     public boolean isSuccessful() {
         return successful;
