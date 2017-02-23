@@ -1,6 +1,5 @@
 package uk.co.tangent.resources;
 
-import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.jersey.PATCH;
 import uk.co.tangent.entities.Lane;
 import uk.co.tangent.entities.Test;
@@ -27,13 +26,11 @@ public class LaneResource {
 
     @GET
     @Path("/{id}")
-    @UnitOfWork
     public Lane getLane(@PathParam("id") Long id) {
         return service.getLane(id);
     }
 
     @POST
-    @UnitOfWork
     public Lane insert(Lane lane) {
         lane.setId(null);
         return service.save(lane);
@@ -41,21 +38,18 @@ public class LaneResource {
 
     @PUT
     @Path("/{id}")
-    @UnitOfWork
     public Lane update(@PathParam("id") Long id, Lane lane) {
         lane.setId(id);
         return service.save(lane);
     }
 
     @GET
-    @UnitOfWork
     public List<Lane> list() {
         return service.getLanes();
     }
 
     @PATCH
     @Path("/{id}")
-    @UnitOfWork
     public Lane control(@PathParam("id") Long id, String command) {
 
         Lane lane = service.getLane(id);
@@ -69,7 +63,6 @@ public class LaneResource {
 
     @POST
     @Path("/{id}/tests")
-    @UnitOfWork
     public Lane addTest(@PathParam("id") Long id, String testPath) {
         Lane lane = service.getLane(id);
         Test test = tests.fromPath(testPath);
@@ -79,7 +72,6 @@ public class LaneResource {
 
     @DELETE
     @Path("/{id}/tests")
-    @UnitOfWork
     public Lane delTest(@PathParam("id") Long id, String testPath) {
         Test test = tests.fromPath(testPath);
         Lane lane = service.getLane(id);

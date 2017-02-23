@@ -1,6 +1,5 @@
 package uk.co.tangent.resources;
 
-import io.dropwizard.hibernate.UnitOfWork;
 import io.dropwizard.views.View;
 import uk.co.tangent.entities.Test;
 import uk.co.tangent.resources.view.TestView;
@@ -24,13 +23,11 @@ public class TestResource {
 
     @GET
     @Path("/{id}")
-    @UnitOfWork
     public Test getTest(@PathParam("id") Long id) {
         return service.getTest(id);
     }
 
     @POST
-    @UnitOfWork
     public Test insert(Test test) {
         test.setId(null);
         return service.save(test);
@@ -38,7 +35,6 @@ public class TestResource {
 
     @PUT
     @Path("/{id}")
-    @UnitOfWork
     public Test update(@PathParam("id") Long id, Test test) {
         test.setId(id);
         return service.save(test);
@@ -46,7 +42,6 @@ public class TestResource {
 
     @DELETE
     @Path("/{id}")
-    @UnitOfWork
     public Test update(@PathParam("id") Long id) {
         Test test = service.getTest(id);
         return service.delete(test);
@@ -59,7 +54,6 @@ public class TestResource {
     }
 
     @GET
-    @UnitOfWork
     public List<Test> list() {
         return service.getTests();
     }
