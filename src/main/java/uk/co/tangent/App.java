@@ -1,13 +1,13 @@
 package uk.co.tangent;
 
-import com.fasterxml.jackson.databind.InjectableValues;
-import com.google.inject.Guice;
-import com.google.inject.Injector;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
+
+import javax.inject.Inject;
+
 import uk.co.tangent.entities.Lane;
 import uk.co.tangent.injection.ServiceRegistry;
 import uk.co.tangent.resources.LaneResource;
@@ -16,7 +16,10 @@ import uk.co.tangent.services.LaneAlreadyRunningException;
 import uk.co.tangent.services.LaneService;
 import uk.co.tangent.services.TaskService;
 
-import javax.inject.Inject;
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
 
 public class App extends Application<Config> {
 
@@ -24,8 +27,6 @@ public class App extends Application<Config> {
      * Container for services. Just so we dont need to pass them around much.
      */
     private final ServiceRegistry services;
-    private final LaneService laneService;
-    private final TaskService taskService;
     private final LaneResource laneResource;
     private final TestResource testResource;
 
@@ -35,11 +36,10 @@ public class App extends Application<Config> {
     }
 
     @Inject
-    public App(ServiceRegistry serviceRegistry, LaneService laneService, TaskService taskService,
-               LaneResource laneResource, TestResource testResource) {
+    public App(ServiceRegistry serviceRegistry, LaneService laneService,
+            TaskService taskService, LaneResource laneResource,
+            TestResource testResource) {
         services = serviceRegistry;
-        this.taskService = taskService;
-        this.laneService = laneService;
         this.laneResource = laneResource;
         this.testResource = testResource;
     }
@@ -60,6 +60,10 @@ public class App extends Application<Config> {
         injectableValues.addValue(ServiceRegistry.class, services);
 
         bootstrap.getObjectMapper().setInjectableValues(injectableValues);
+        bootstrap.getObjectMapper().disable(
+                SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        bootstrap.addBundle(services.getSwagger());
     }
 
     @Override
@@ -71,10 +75,10 @@ public class App extends Application<Config> {
     }
 
     private void registerAndRunLanes() throws LaneAlreadyRunningException {
-        for (Lane lane : laneService.getLanes()) {
-            taskService.addLane(lane);
+        for (Lane lane : services.getLaneService().getLanes()) {
+            services.getTaskService().addLane(lane);
             if (lane.getActive()) {
-                taskService.startLane(lane);
+                services.getTaskService().startLane(lane);
             }
         }
     }

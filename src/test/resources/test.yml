@@ -1,7 +1,7 @@
  
 bindings:
  - lastname: '[ab]{4,6}c'
-descriminator: '${canary_id}'
+
 steps:
   - type: http
     name: Update user

@@ -31,3 +31,6 @@ database:
 
   # whether or not idle connections should be validated
   checkConnectionWhileIdle: false
+  
+swagger:
+  resourcePackage: uk.co.tangent.resources
