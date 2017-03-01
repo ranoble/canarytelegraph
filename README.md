@@ -2,7 +2,7 @@
 
 ## How to get it running.
 
-1. Install postgres
+1. Install postgres (you will need the hstore type)
 2. Create a database
 3. Build the app, using mvn package
 4. Set up your environment, by copying server.yml.sample to server.yml and updating as appropriate.
@@ -40,7 +40,7 @@ See: test_definitions.md for more on tests.
 
 ### Create a Lane: 
 
-    curl -vX POST --data='{"laneBindings": {"canary": "1"}, "name": "first", "active": true}' -H "Content-Type: application/json" http://localhost:8080/lane/
+    curl -vX POST --data '{"laneBindings": {"canary": "1"}, "name": "first", "active": true}' -H "Content-Type: application/json" http://localhost:8080/lane/
 
 ### Create a Test:
 
