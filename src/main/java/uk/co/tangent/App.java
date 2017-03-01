@@ -11,6 +11,7 @@ import javax.inject.Inject;
 import uk.co.tangent.entities.Lane;
 import uk.co.tangent.injection.ServiceRegistry;
 import uk.co.tangent.resources.LaneResource;
+import uk.co.tangent.resources.StatusResource;
 import uk.co.tangent.resources.TestResource;
 import uk.co.tangent.services.LaneAlreadyRunningException;
 import uk.co.tangent.services.LaneService;
@@ -29,6 +30,7 @@ public class App extends Application<Config> {
     private final ServiceRegistry services;
     private final LaneResource laneResource;
     private final TestResource testResource;
+    private final StatusResource statusResource;
 
     public static void main(String[] args) throws Exception {
         Injector injector = Guice.createInjector(new CanaryModule());
@@ -38,10 +40,11 @@ public class App extends Application<Config> {
     @Inject
     public App(ServiceRegistry serviceRegistry, LaneService laneService,
             TaskService taskService, LaneResource laneResource,
-            TestResource testResource) {
+            TestResource testResource, StatusResource statusResource) {
         services = serviceRegistry;
         this.laneResource = laneResource;
         this.testResource = testResource;
+        this.statusResource = statusResource;
     }
 
     @Override
@@ -70,7 +73,7 @@ public class App extends Application<Config> {
     public void run(Config config, Environment env) throws Exception {
         env.jersey().register(laneResource);
         env.jersey().register(testResource);
-
+        env.jersey().register(statusResource);
         registerAndRunLanes();
     }
 

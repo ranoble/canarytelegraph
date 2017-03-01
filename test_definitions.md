@@ -74,7 +74,7 @@ of different actions.
 At the time of writing we only have 2 step types, "http", for http and https requests and delay.
 Each Step can have a list of confirmations, the actions of which are bound to the request.
 
-### Delay: Type
+### Delay
 
     - type: delay
       name: Wait for 60 minutes

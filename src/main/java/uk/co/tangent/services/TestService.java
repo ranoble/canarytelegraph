@@ -75,6 +75,19 @@ public class TestService {
         return criteria.list();
     }
 
+    public Optional<TestResult> getLatestResult(Test test) {
+        Criteria criteria = getResultsCriteria(test, Optional.empty(),
+                Optional.empty());
+        criteria.addOrder(Order.desc("written"));
+        criteria.setMaxResults(1);
+        List<TestResult> results = criteria.list();
+
+        if (results.isEmpty()) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(results.get(0));
+    }
+
     public Long getTestResultsCount(Test test, Optional<Date> since,
             Optional<Date> until) {
         return (Long) getResultsCriteria(test, since, until).setProjection(
