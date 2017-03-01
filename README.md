@@ -44,7 +44,7 @@ See: test_definitions.md for more on tests.
 
 ### Create a Test:
 
-    curl -vX POST -d @test_google.json http://localhost:8080/lane/4/tests -H "Content-Type: application/json"
+    curl -vX POST -d @test_google.json http://localhost:8080/test -H "Content-Type: application/json"
 
 ### Add a Test to a Lane (Update Test ID and Lane ID as appropriate):
 
