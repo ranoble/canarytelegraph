@@ -1,15 +1,20 @@
 package uk.co.tangent.services;
 
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.Restrictions;
-import uk.co.tangent.entities.Lane;
-import uk.co.tangent.entities.Test;
-import uk.co.tangent.jmx.JMXBean;
+import java.util.List;
+import java.util.Random;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+
+import org.hibernate.Criteria;
+import org.hibernate.Session;
+import org.hibernate.criterion.Restrictions;
+
+import uk.co.tangent.entities.Lane;
+import uk.co.tangent.entities.Test;
+import uk.co.tangent.jmx.JMXBean;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -32,24 +37,24 @@ public class LaneService implements LaneServiceMXBean {
     }
 
     public Lane getLane(Long id) {
-            return getSession().load(Lane.class, id);
+        return getSession().load(Lane.class, id);
     }
 
     @SuppressWarnings("unchecked")
     public List<Lane> getLanes() {
-            return getSession().createCriteria(Lane.class).list();
+        return getSession().createCriteria(Lane.class).list();
     }
 
     @SuppressWarnings("unchecked")
     public List<Test> loadTests(Lane lane) {
-            Criteria cr = getSession().createCriteria(Test.class);
-            cr.add(Restrictions.eq("lane", lane));
-            return cr.list();
+        Criteria cr = getSession().createCriteria(Test.class);
+        cr.add(Restrictions.eq("lane", lane));
+        return cr.list();
     }
 
     public Lane save(Lane lane) {
         if (lane.getId() == null) {
-                getSession().save(lane);
+            getSession().save(lane);
             /*
              * TODO: Readd
              */
@@ -62,11 +67,11 @@ public class LaneService implements LaneServiceMXBean {
     }
 
     public Test loadRandomTest(Lane lane) {
-            Random random = new Random();
-            lane = getSession().load(Lane.class, lane.getId());
-            List<Test> tests = lane.getTests();
-            int testIndex = random.nextInt(tests.size());
-            return tests.get(testIndex);
+        Random random = new Random();
+        lane = getSession().load(Lane.class, lane.getId());
+        List<Test> tests = lane.getTests();
+        int testIndex = random.nextInt(tests.size());
+        return tests.get(testIndex);
     }
 
     public String getPath(Lane lane) {
@@ -92,5 +97,9 @@ public class LaneService implements LaneServiceMXBean {
     @Override
     public int getLaneCount() {
         return getLanes().size();
+
+    public String getResultsPath(Lane lane) {
+        // TODO Auto-generated method stub
+        return String.format("/lane/%d/results", lane.getId());
     }
 }

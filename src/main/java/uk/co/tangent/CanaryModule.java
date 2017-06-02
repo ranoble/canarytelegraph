@@ -10,6 +10,11 @@ import com.google.inject.spi.TypeListener;
 import io.dropwizard.db.PooledDataSourceFactory;
 import io.dropwizard.hibernate.HibernateBundle;
 import io.dropwizard.hibernate.ScanningHibernateBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundle;
+import io.federecio.dropwizard.swagger.SwaggerBundleConfiguration;
+
+import javax.inject.Singleton;
+
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.reflections.Reflections;
@@ -48,9 +53,9 @@ public class CanaryModule extends AbstractModule implements TypeListener {
 
     @Provides
     @Singleton
-    HibernateBundle<Config> getHibernate(ServiceAwareInjector serviceAwareInjector) {
-        return new ScanningHibernateBundle<Config>(
-                "uk.co.tangent.entities") {
+    HibernateBundle<Config> getHibernate(
+            ServiceAwareInjector serviceAwareInjector) {
+        return new ScanningHibernateBundle<Config>("uk.co.tangent.entities") {
 
             @Override
             public PooledDataSourceFactory getDataSourceFactory(
@@ -88,5 +93,16 @@ public class CanaryModule extends AbstractModule implements TypeListener {
                 }
             }
         });
+
+    @Provides
+    @Singleton
+    SwaggerBundle<Config> getSwagger(ServiceAwareInjector serviceAwareInjector) {
+        return new SwaggerBundle<Config>() {
+            @Override
+            protected SwaggerBundleConfiguration getSwaggerBundleConfiguration(
+                    Config configuration) {
+                return configuration.swaggerBundleConfiguration;
+            }
+        };
     }
 }

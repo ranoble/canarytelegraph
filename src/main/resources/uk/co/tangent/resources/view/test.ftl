@@ -46,8 +46,14 @@
         <div class="row">
 
         <div class="col-sm-8">
-
-            <h1>Test Form</h1>
+            <h2>Tests</h2>
+            <ul>
+            <#list tests as test>
+                <li><a href="${test.path}">${test.name}</a> <a href="${test.path}/results">Results</a> </li>
+            </#list>
+            </ul>
+            
+            <h2>Test Form</h2>
             
             <p>
               <form method="POST" action="/test">

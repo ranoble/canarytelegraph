@@ -7,6 +7,31 @@ import com.fasterxml.jackson.databind.InjectableValues;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import io.swagger.annotations.ApiModelProperty;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
+import javax.persistence.Transient;
+
 import net.backtothefront.HstoreUserType;
 import nl.flotsam.xeger.Xeger;
 import org.hibernate.annotations.AttributeAccessor;
@@ -34,6 +59,7 @@ public class Lane extends ServiceAwareEntity {
 
     @Type(type = "hstore")
     @Column(columnDefinition = "hstore")
+    @ApiModelProperty(value = "The key value bindings, bound to this specific lane, as a json object. These are variables you can define and use in the tests. They can be defined as string literals or as simple regular expressions. in the case of Regular Expressions, random strings will be generated.", example = "{\"user_id\": \"(1|2|3)\"}")
     private Map<String, String> laneBindings = new HashMap<String, String>();
 
     @ManyToMany(cascade = { CascadeType.ALL })
@@ -43,6 +69,7 @@ public class Lane extends ServiceAwareEntity {
     @OneToMany(mappedBy = "lane")
     private List<TestResult> results;
 
+    @ApiModelProperty(required = true)
     private String name;
 
     private Boolean active = Boolean.FALSE;
@@ -62,7 +89,7 @@ public class Lane extends ServiceAwareEntity {
         final InjectableValues.Std injectableValues = new InjectableValues.Std();
         injectableValues.addValue(Map.class, bindings);
         objectMapper.setInjectableValues(injectableValues);
-
+        random = new Random();
     }
 
     public Long getId() {
@@ -74,6 +101,7 @@ public class Lane extends ServiceAwareEntity {
     }
 
     @JsonGetter(value = "tests")
+    @ApiModelProperty(value = "List of tests, int the form of relative URI's: As json array.", example = "[/test/1,/test/2]")
     public Set<String> serializeTests() {
         List<Test> tests = getTests();
         return tests.stream()
@@ -83,11 +111,18 @@ public class Lane extends ServiceAwareEntity {
     }
 
     @JsonSetter(value = "tests")
+    @ApiModelProperty(value = "List of tests, int the form of relative URI's: As json array.", example = "[/test/1,/test/2]")
     public void deserializeTests(Set<String> testPaths) {
         tests = testPaths.stream()
                 .map(string -> getServices().getTestService().fromPath(string))
                 .collect(Collectors.toList());
 
+    }
+
+    @JsonGetter(value = "results")
+    @ApiModelProperty(value = "The relative path of the lane tests", readOnly = true)
+    public String serializeResults() {
+        return getServices().getLaneService().getResultsPath(this);
     }
 
     public List<Test> getTests() {

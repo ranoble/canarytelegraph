@@ -1,17 +1,28 @@
 package uk.co.tangent.entities;
 
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import net.backtothefront.HstoreUserType;
 import org.hibernate.annotations.AttributeAccessor;
-import org.hibernate.annotations.Type;
 import org.hibernate.annotations.TypeDef;
 import org.joda.time.DateTime;
-import uk.co.tangent.injection.ServiceAwareEntity;
 
 import javax.persistence.*;
 import java.util.HashMap;
-import java.util.Map;
+
+import uk.co.tangent.data.steps.confirmations.Result;
+import uk.co.tangent.injection.ServiceAwareEntity;
+
+import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.InjectableValues;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Entity
 @AttributeAccessor("field")
@@ -30,10 +41,6 @@ public class TestResult extends ServiceAwareEntity {
     @ManyToOne
     @JoinColumn(name = "lane_id")
     private Lane lane;
-
-    @Type(type = "hstore")
-    @Column(columnDefinition = "hstore")
-    private Map<String, String> bindings = new HashMap<String, String>();
 
     @Column(columnDefinition = "text")
     private String results;
@@ -89,14 +96,6 @@ public class TestResult extends ServiceAwareEntity {
         this.lane = lane;
     }
 
-    public Map<String, String> getBindings() {
-        return bindings;
-    }
-
-    public void setBindings(Map<String, String> bindings) {
-        this.bindings = bindings;
-    }
-
     public String getResults() {
         return results;
     }
@@ -119,6 +118,21 @@ public class TestResult extends ServiceAwareEntity {
 
     public void setHealthy(Boolean healthy) {
         this.healthy = healthy;
+    }
+
+    @JsonIgnore
+    public List<Result> getList() throws JsonParseException,
+            JsonMappingException, IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ConcurrentHashMap<String, String> bindings = new ConcurrentHashMap<String, String>();
+        final InjectableValues.Std injectableValues = new InjectableValues.Std();
+        injectableValues.addValue(Map.class, bindings);
+        mapper.setInjectableValues(injectableValues);
+        List<Result> stepResults = mapper.readValue(
+                results,
+                mapper.getTypeFactory().constructCollectionType(List.class,
+                        Result.class));
+        return stepResults;
     }
 
 }
