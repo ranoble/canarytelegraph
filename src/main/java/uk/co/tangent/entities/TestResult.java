@@ -5,19 +5,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-
 import net.backtothefront.HstoreUserType;
-
 import org.hibernate.annotations.AttributeAccessor;
 import org.hibernate.annotations.TypeDef;
 import org.joda.time.DateTime;
+
+import javax.persistence.*;
+import java.util.HashMap;
 
 import uk.co.tangent.data.steps.confirmations.Result;
 import uk.co.tangent.injection.ServiceAwareEntity;

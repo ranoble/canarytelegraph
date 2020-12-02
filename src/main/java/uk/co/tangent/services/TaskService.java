@@ -12,6 +12,7 @@ import uk.co.tangent.data.steps.confirmations.Result;
 import uk.co.tangent.entities.Lane;
 import uk.co.tangent.entities.Test;
 import uk.co.tangent.entities.TestResult;
+import uk.co.tangent.jmx.JMXBean;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -22,9 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Singleton
-public class TaskService {
+@JMXBean
+public class TaskService implements TaskServiceMXBean {
     private static final Logger LOGGER = LoggerFactory.getLogger(TaskService.class);
 
     private Map<Lane, CompletableFuture<?>> tasks = new HashMap<>();
@@ -107,9 +110,24 @@ public class TaskService {
         tasks.get(lane).cancel(true);
     }
 
+    @Override
+    public int getNumberOfTasks() {
+        return tasks.size();
+    }
+
+    @Override
+    public Map<Long, String> getAllTasks() {
+        return tasks.keySet().stream().collect(Collectors.toMap(Lane::getId, Lane::getName));
+    }
+
     public void stopAll() {
         for (Entry<Lane, CompletableFuture<?>> lanes : tasks.entrySet()) {
             lanes.getValue().cancel(true);
         }
+    }
+
+    @Override
+    public void stop(int id) {
+        tasks.keySet().stream().filter(x -> x.getId().intValue() == id).findFirst().ifPresent(this::stopLane);
     }
 }

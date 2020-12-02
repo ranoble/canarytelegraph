@@ -9,6 +9,7 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
+import org.reflections.Reflections;
 import uk.co.tangent.data.CanaryTest;
 import uk.co.tangent.data.steps.Step;
 import uk.co.tangent.data.steps.StepDeserializer;
@@ -21,7 +22,7 @@ public class TestDeserialization {
 
     @Test
     public void testDeserializerLoading() {
-        StepDeserializer deserial = new StepDeserializer();
+        StepDeserializer deserial = new StepDeserializer(new Reflections("uk.co.tangent"));
         assertTrue(deserial.getSteps().containsKey("http"));
         assertTrue(deserial.getSteps().containsKey("delay"));
 

@@ -1,15 +1,10 @@
 package uk.co.tangent.entities;
 
-import io.swagger.annotations.ApiModelProperty;
-
+import javax.persistence.*;
 import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
+import io.swagger.annotations.ApiModelProperty;
+
 
 import uk.co.tangent.injection.ServiceAwareEntity;
 
