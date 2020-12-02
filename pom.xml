@@ -7,7 +7,7 @@
     <properties>
         <dropwizard.version>1.0.6</dropwizard.version>
         <unirest.version>1.4.9</unirest.version>
-        <beanutils.version>1.9.3</beanutils.version>
+        <beanutils.version>1.9.4</beanutils.version>
         <reflections.version>0.9.10</reflections.version>
         <io.version>2.5</io.version>
         <yml.version>2.8.3</yml.version>
